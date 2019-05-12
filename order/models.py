@@ -28,18 +28,14 @@ class order(models.Model):
         (threeday,"three day")
     )
 
-    weijiedan = 0#未接单
     completed = 1#已完成
-    owner_canceled = 2
-    lancer_canceled = 3
-    jiedan = 4#已接单
+    canceled = 2
+    incompleted = 3
 
     order_status_choices = (
-        (weijiedan,"no free lancer"),
+        (incompleted,"incompleted"),
         (completed,"completed"),
-        (owner_canceled,"owner canceled"),
-        (lancer_canceled,"lancer canceled"),
-        (jiedan, "has a lancer"),
+        (canceled,"canceled"),
     )
     orderid = models.CharField(max_length=30,unique=True,primary_key=True)
     value = models.IntegerField("价值",choices=value_choices)
@@ -66,3 +62,4 @@ class order(models.Model):
     code = models.CharField(verbose_name="取件码",max_length=64)
     #收货人姓名
     owner_name = models.CharField(verbose_name="主人名",max_length=256)
+
