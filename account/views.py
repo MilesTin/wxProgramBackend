@@ -1,4 +1,5 @@
 from django.shortcuts import render
+import django
 from django.http import JsonResponse,HttpResponse
 from django.shortcuts import get_object_or_404,redirect
 import urllib.request
@@ -7,11 +8,13 @@ import json
 import requests
 from PIL import Image
 import os
-from .models import *
+# from .models import *
 from qcloudsms_py import SmsSingleSender
 from qcloudsms_py.httpclient import HTTPError
+from order.models import *
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 class sculogin(object):
     url = "http://zhjw.scu.edu.cn/j_spring_security_check"
@@ -170,8 +173,36 @@ def verifPhone(request):
 
     #user手机号存储
     return JsonResponse({"msg":""})
+
+def myorder(request):
+    #status 1,2,3,4
+    #需要登录
+    openid = request.session.get("openid","")
+    cur_user = get_object_or_404(user,openid=openid)
+    status = request.GET.get("status","")
+
+    try:
+        status = int(status)
+    except ValueError as e:
+        logger.critical(e)
+        status = 0
+
+    #第一种,我发的订单
+    sendOrder = order.objects.filter(order_owner=cur_user).values(["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"])
+    receivedOrder = order.objects.filter(free_lancer=cur_user).values(["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"])
+
+    if status:
+        sendOrder = sendOrder.filter(order_status=status)
+        receivedOrder = receivedOrder.filter(order_status=status)
+    #默认按照订单创建时间排序,最新的订单
+    sendOrder.order_by("createTime")
+    receivedOrder.order_by("createTime")
+    return JsonResponse({"sendOrder":sendOrder,"receivedOrder":receivedOrder},safe=False)
+
 #test函数
 if __name__=="__main__":
+
+
     scuL = sculogin()
     print(scuL.is_updated)
     scuL.getCapatcha()

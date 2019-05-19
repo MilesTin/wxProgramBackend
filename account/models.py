@@ -8,7 +8,7 @@ class user(models.Model):
 
 
     openid = models.CharField(max_length=30,unique=True,primary_key=True)
-    wx_name = models.CharField(max_length=30)
+    wx_name = models.CharField(max_length=30,null=True,blank=True)
     phone = models.CharField(max_length=11,null=True,blank=True)#手机号为11位
     studentId = models.CharField(max_length=13,unique=True,null=True,blank=True)#学号为13为
     stuIdPwd = models.CharField(max_length=30,null=True,blank=True)
@@ -27,10 +27,15 @@ class user(models.Model):
         (banned,"banned"),
         (normal,"normal"),
     )
-    status = models.IntegerField(verbose_name="状态",choices=status_choices)
+    status = models.IntegerField(verbose_name="状态",choices=status_choices,default=normal)
 
     created_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.wx_name
+        if self.wx_name:
+            return self.wx_name
+        else:
+            return self.openid
+
+
 

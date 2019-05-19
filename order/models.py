@@ -31,11 +31,13 @@ class order(models.Model):
     completed = 1#已完成
     canceled = 2
     incompleted = 3
+    expired = 4
 
     order_status_choices = (
         (incompleted,"incompleted"),
         (completed,"completed"),
         (canceled,"canceled"),
+        (expired,"expired"),
     )
     orderid = models.CharField(max_length=30,unique=True,primary_key=True)
     value = models.IntegerField("价值",choices=value_choices)
@@ -46,7 +48,7 @@ class order(models.Model):
     #接订单的人
     free_lancer = models.ForeignKey(user,verbose_name="小哥",null=True,blank=True,on_delete=models.SET_NULL,related_name="lancer_orders")
     #酬劳
-    money = models.FloatField(default=0,verbose_name="酬劳")
+    money = models.DecimalField(max_digits=50,decimal_places=4,default=0,verbose_name="酬劳")
     #地点
     pos = models.CharField(verbose_name="地点",max_length=256)
 
@@ -56,10 +58,12 @@ class order(models.Model):
 
     order_status = models.IntegerField(verbose_name="订单状态",choices=order_status_choices)
 
-    #hidden infor
-    phone_number = models.CharField(verbose_name="电话号码",max_length=11)
-    #取件码
-    code = models.CharField(verbose_name="取件码",max_length=64)
-    #收货人姓名
-    owner_name = models.CharField(verbose_name="主人名",max_length=256)
+    # #hidden infor
+    # phone_number = models.CharField(verbose_name="电话号码",max_length=11.)
+    # #取件码
+    # code = models.CharField(verbose_name="取件码",max_length=64)
+    # #收货人姓名
+    # owner_name = models.CharField(verbose_name="主人名",max_length=256)
+    hidden_info = models.TextField(verbose_name="隐藏的信息",null=True,blank=True)
+    #包含收件手机号 取件码 以及一切相关的信息
 
