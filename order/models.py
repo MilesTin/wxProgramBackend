@@ -42,8 +42,7 @@ class order(models.Model):
     orderid = models.CharField(max_length=30,unique=True,primary_key=True)
     value = models.IntegerField("价值",choices=value_choices)
     createTime = models.DateTimeField(auto_now_add=True)
-    expireTime = models.IntegerField("过期时长",choices=expireTime_choices)#hour
-
+    expireDateTime = models.DateTimeField(verbose_name="过期时间")
     order_owner = models.ForeignKey(user,verbose_name="订单主人",null=True,blank=True,on_delete=models.SET_NULL,related_name="owner_orders")
     #接订单的人
     free_lancer = models.ForeignKey(user,verbose_name="小哥",null=True,blank=True,on_delete=models.SET_NULL,related_name="lancer_orders")
@@ -56,7 +55,7 @@ class order(models.Model):
 
     recieved_pos = models.CharField(verbose_name="收货地址",max_length=256)
 
-    order_status = models.IntegerField(verbose_name="订单状态",choices=order_status_choices)
+    order_status = models.IntegerField(verbose_name="订单状态",choices=order_status_choices,default=incompleted)
 
     # #hidden infor
     # phone_number = models.CharField(verbose_name="电话号码",max_length=11.)

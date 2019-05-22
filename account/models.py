@@ -28,9 +28,8 @@ class user(models.Model):
         (normal,"normal"),
     )
     status = models.IntegerField(verbose_name="状态",choices=status_choices,default=normal)
-
+    head_img = models.CharField(verbose_name="头像图片url",max_length=100,default="/static/account/img/default.jpg")
     created_date = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         if self.wx_name:
             return self.wx_name

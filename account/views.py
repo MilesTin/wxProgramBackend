@@ -3,6 +3,8 @@ import django
 from django.http import JsonResponse,HttpResponse
 from django.shortcuts import get_object_or_404,redirect
 import urllib.request
+import urllib
+
 from django.conf import settings
 import json
 import requests
@@ -12,9 +14,44 @@ import os
 from qcloudsms_py import SmsSingleSender
 from qcloudsms_py.httpclient import HTTPError
 from order.models import *
+
 import logging
+from django.core.serializers.json import DjangoJSONEncoder
 
 logger = logging.getLogger(__name__)
+
+
+class serializeUser(DjangoJSONEncoder):
+    def default(self,o,*fields):
+        ret_value = {}
+        if isinstance(o,user):
+            for key in fields:
+                value = getattr(o,key)
+                if isinstance(value,str):
+                    ret_value[key] = value
+                else:
+                    serializeValue = super().default(value)
+                    ret_value[key] = serializeValue
+            return str(ret_value)
+
+        elif type(o)==str:
+            return o
+        print(o)
+        return super().default(o)
+
+#没有问题，单元测试搞不来
+def order_user_Serializer(o,orderFields,userFields):
+    ret_value = {}
+    for key in orderFields:
+        serializer = serializeUser()
+        obj = getattr(o,key)
+        if isinstance(obj,user):
+            value = serializer.default(obj,*userFields)
+            ret_value[key] = value
+        else:
+            ret_value[key] = obj
+    return ret_value
+
 
 class sculogin(object):
     url = "http://zhjw.scu.edu.cn/j_spring_security_check"
@@ -65,6 +102,8 @@ def login(request):
     appid = request.GET.get("appid","")
     secret = request.GET.get("secret","")
     code = request.GET.get("code","")
+    head_img = request.GET.get("head_img","")
+
     errmsg = ""
     if not appid:
         errmsg+= "appid不能为空"
@@ -72,7 +111,8 @@ def login(request):
         errmsg+="秘钥secret不能为空"
     elif not code:
         errmsg+="登录code为空"
-
+    elif not head_img:
+        errmsg += "头像url没空"
     if errmsg:
         return JsonResponse({"errmsg":errmsg},status=404)
 
@@ -103,9 +143,11 @@ def login(request):
             newUser = user()
             newUser.openid = openid
             newUser.wx_name = wx_name
+            newUser.head_img = head_img
             newUser.save()
-
-
+            #头像文件保存
+            local = "static/account/img/"+newUser.openid + ".jpg"
+            urllib.request.urlretrieve(head_img,local)
         request.session['session_key'] = session_key
         request.session['is_login'] = True
         request.session.set_expiry(100000000)
@@ -191,12 +233,17 @@ def myorder(request):
     sendOrder = order.objects.filter(order_owner=cur_user).values(["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"])
     receivedOrder = order.objects.filter(free_lancer=cur_user).values(["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"])
 
+    orderFields = ["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"]
+    userFields = ["openid","wx_name","phone","studentId","head_img"]
     if status:
         sendOrder = sendOrder.filter(order_status=status)
         receivedOrder = receivedOrder.filter(order_status=status)
     #默认按照订单创建时间排序,最新的订单
     sendOrder.order_by("createTime")
     receivedOrder.order_by("createTime")
+
+    sendOrders = [order_user_Serializer(order_obj,orderFields,userFields) for order_obj in sendOrder]
+    receivedOrders = [order_user_Serializer(order_obj,orderFields,userFields) for order_obj in receivedOrder]
     return JsonResponse({"sendOrder":sendOrder,"receivedOrder":receivedOrder},safe=False)
 
 #test函数
