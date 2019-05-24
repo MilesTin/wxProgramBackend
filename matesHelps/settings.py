@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import pymysql
+import platform
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,6 +23,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '+mp8+$w=^j2v^#l)51o+8pg^zu$d#30%amlk2p$f68hod9x5j#'
 
+APPID = 'wxc84b45f5439e7c25'
+SECRET = '8b23fb5594a94e3443ec77ffd2cdf185'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -129,10 +132,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.curdir + "/static"
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.curdir + "/media"
+STATIC_URL = '/static/matesHelps/'
+MEDIA_URL = '/media/matesHelps/'
+if platform.system()=='Windows':
+    STATIC_ROOT = os.curdir + '/static'
+    MEDIA_ROOT = os.curdir + '/media'
+else:
+    STATIC_ROOT = "/var/matesHelps/static"
+    MEDIA_ROOT = "/var/matesHelps/media"
+
+
 
 #SESSION
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'

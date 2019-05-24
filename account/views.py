@@ -4,7 +4,7 @@ from django.http import JsonResponse,HttpResponse
 from django.shortcuts import get_object_or_404,redirect
 import urllib.request
 import urllib
-
+import platform
 from django.conf import settings
 import json
 import requests
@@ -71,7 +71,10 @@ class sculogin(object):
         print(sculogin.url)
         ir = self.session.get(sculogin.img_url)
         if ir.status_code == 200:
-            open('account/static/account/img/login.jpg', 'wb').write(ir.content)
+            if platform.system()=="Linux":
+                open(settings.STATIC_ROOT+'/static/account/img/login.jpg', 'wb').write(ir.content)
+            else:
+                open('static/account/img/login.jpg', 'wb').write(ir.content)
         #test
         # img = Image.open("static/account/img/login.jpg")
         # img.show()
@@ -99,8 +102,8 @@ scuLoginer = sculogin()
 
 def login(request):
     wx_name = request.GET.get("wx_name")
-    appid = request.GET.get("appid","")
-    secret = request.GET.get("secret","")
+    appid = settings.APPID
+    secret = settings.SECRET
     code = request.GET.get("code","")
     head_img = request.GET.get("head_img","")
 
@@ -146,8 +149,10 @@ def login(request):
             newUser.head_img = head_img
             newUser.save()
             #头像文件保存
-
-            local = "account/static/account/img/"+newUser.openid + ".jpg"
+            if platform.system()=='Linux':
+                local = settings.STATIC_ROOT + "/static/account/img/"+newUser.openid + ".jpg"
+            else:
+                local = "static/account/img/"+newUser.openid + ".jpg"
             # with open(local,'w') as f:
             #     pass
             urllib.request.urlretrieve(head_img,local)
