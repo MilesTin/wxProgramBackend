@@ -141,12 +141,14 @@ def login(request):
         request.session['openid'] = openid
         try:
             cur_user = user.objects.get(openid=openid)
+            cur_user.wx_name = wx_name
+            cur_user.save()
         except:
             #创建user
             newUser = user()
             newUser.openid = openid
             newUser.wx_name = wx_name
-            newUser.head_img = head_img
+            newUser.head_img = settings.STATIC_ROOT + "/account/img/" + openid + ".jpg"
             newUser.save()
             #头像文件保存
             if platform.system()=='Linux':
