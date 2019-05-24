@@ -71,7 +71,7 @@ class sculogin(object):
         print(sculogin.url)
         ir = self.session.get(sculogin.img_url)
         if ir.status_code == 200:
-            open('static/account/img/login.jpg', 'wb').write(ir.content)
+            open('account/static/account/img/login.jpg', 'wb').write(ir.content)
         #test
         # img = Image.open("static/account/img/login.jpg")
         # img.show()
@@ -147,7 +147,7 @@ def login(request):
             newUser.save()
             #头像文件保存
 
-            local = os.path.abspath("account/static/account/img/"+newUser.openid + ".jpg")
+            local = "account/static/account/img/"+newUser.openid + ".jpg"
             # with open(local,'w') as f:
             #     pass
             urllib.request.urlretrieve(head_img,local)
