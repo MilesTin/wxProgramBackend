@@ -72,7 +72,7 @@ class sculogin(object):
         ir = self.session.get(sculogin.img_url)
         if ir.status_code == 200:
             if platform.system()=="Linux":
-                open(settings.STATIC_ROOT+'/static/account/img/login.jpg', 'wb').write(ir.content)
+                open(settings.STATIC_ROOT+'/account/img/login.jpg', 'wb').write(ir.content)
             else:
                 open('static/account/img/login.jpg', 'wb').write(ir.content)
         #test
@@ -150,7 +150,7 @@ def login(request):
             newUser.save()
             #头像文件保存
             if platform.system()=='Linux':
-                local = settings.STATIC_ROOT + "/static/account/img/"+newUser.openid + ".jpg"
+                local = settings.STATIC_ROOT + "/account/img/"+newUser.openid + ".jpg"
             else:
                 local = "static/account/img/"+newUser.openid + ".jpg"
             # with open(local,'w') as f:
