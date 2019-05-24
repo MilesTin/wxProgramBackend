@@ -14,7 +14,7 @@ import os
 from qcloudsms_py import SmsSingleSender
 from qcloudsms_py.httpclient import HTTPError
 from order.models import *
-
+import os
 import logging
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -146,7 +146,10 @@ def login(request):
             newUser.head_img = head_img
             newUser.save()
             #头像文件保存
-            local = "static/account/img/"+newUser.openid + ".jpg"
+
+            local = os.path.abspath("account/static/account/img/"+newUser.openid + ".jpg")
+            # with open(local,'w') as f:
+            #     pass
             urllib.request.urlretrieve(head_img,local)
         request.session['session_key'] = session_key
         request.session['is_login'] = True
