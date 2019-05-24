@@ -148,7 +148,7 @@ def login(request):
             newUser = user()
             newUser.openid = openid
             newUser.wx_name = wx_name
-            newUser.head_img = settings.STATIC_ROOT + "/account/img/" + openid + ".jpg"
+            newUser.head_img = settings.STATIC_URL + "/account/img/" + openid + ".jpg"
             newUser.save()
             #头像文件保存
             if platform.system()=='Linux':
