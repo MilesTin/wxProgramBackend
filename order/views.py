@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.core.serializers import serialize
 from account.views import serializeUser
 from datetime import datetime
+from django.utils import timezone
 from datetime import timedelta
 # Create your views here.
 """
@@ -16,7 +17,7 @@ userSerializer = serializeUser()
 
 def orderStatusUpdate():
     for order_obj in order.objects.all():
-        if order_obj.expireDateTime>datetime.today():
+        if order_obj.expireDateTime<timezone.now():
             order_obj.order_status = order.expired
             order_obj.save()
 
@@ -33,23 +34,28 @@ def search(request):
         print(e)
         return JsonResponse({"msg":"page字段有问题"},status=404)
 
-    results = order.objects.filter(order_status=order.incompleted).values(*["orderid","createTime","money","pos","kuaidi","expireDateTime",])
-    results = [_ for _ in results if search in _.pos or search in _.recieved_pos or search in _.kuaidi]
+    results = order.objects.filter(order_status=order.incompleted).values(*["orderid","createTime","money","pos","received_pos","kuaidi","expireDateTime",])
 
-    orderByTime = request.GET.get("orderbytime",'')
-    orderByPrice = request.GET.get("orderbyprice",'')
+    results = [_ for _ in results if search in _['pos'] or search in _["received_pos"] or search in _["kuaidi"]]
+
+    orderByTime = request.GET.get("orderByTime",'')
+    orderByPrice = request.GET.get("orderByPrice",'')
 
     if orderByTime:
-        results.sort(key = lambda x: x.createTime)
+        results.sort(key = lambda x: x['createTime'],reverse=True)
     if orderByTime=="-1":#时间最长的订单
         results.reverse()
-
+    print(orderByTime)
+    print(orderByPrice)
     if orderByPrice:
-        results.sort(key=lambda x:x.money)
+        results.sort(key=lambda x:x['money'],reverse=True)
 
     if orderByPrice=="-1":#价钱最小的订单
         results.reverse()
-    results = results[10*page:10*(page+1)]
+
+    if page<1:
+        page = 1
+    results = results[10*page-10:10*page]
     return JsonResponse({'results':results},safe=False)
 
 def getOrder(request):#获得某个订单的具体信息

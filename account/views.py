@@ -29,6 +29,8 @@ class serializeUser(DjangoJSONEncoder):
                 value = getattr(o,key)
                 if isinstance(value,str):
                     ret_value[key] = value
+                elif type(value)==type(None):
+                    ret_value[key] = ''
                 else:
                     serializeValue = super().default(value)
                     ret_value[key] = serializeValue
@@ -36,7 +38,8 @@ class serializeUser(DjangoJSONEncoder):
 
         elif type(o)==str:
             return o
-        print(o)
+        elif type(o)==None:
+            return ''
         return super().default(o)
 
 #没有问题，单元测试搞不来

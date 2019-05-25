@@ -53,7 +53,7 @@ class order(models.Model):
 
     kuaidi = models.CharField(verbose_name="快递商",max_length=256)
 
-    recieved_pos = models.CharField(verbose_name="收货地址",max_length=256)
+    received_pos = models.CharField(verbose_name="收货地址",max_length=256)
 
     order_status = models.IntegerField(verbose_name="订单状态",choices=order_status_choices,default=incompleted)
 
