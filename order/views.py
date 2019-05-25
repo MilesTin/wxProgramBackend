@@ -17,7 +17,7 @@ userSerializer = serializeUser()
 
 def orderStatusUpdate():
     for order_obj in order.objects.all():
-        if order_obj.expireDateTime>timezone.now():
+        if order_obj.expireDateTime<timezone.now():
             order_obj.order_status = order.expired
             order_obj.save()
 
