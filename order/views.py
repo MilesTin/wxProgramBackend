@@ -7,6 +7,7 @@ from django.core.serializers import serialize
 from account.views import serializeUser
 from datetime import datetime
 from datetime import timedelta
+from django.utils import timezone
 # Create your views here.
 """
     bug:expireTime应改为datetime,新订单时创建
@@ -16,7 +17,7 @@ userSerializer = serializeUser()
 
 def orderStatusUpdate():
     for order_obj in order.objects.all():
-        if order_obj.expireDateTime>datetime.today():
+        if order_obj.expireDateTime>timezone.now():
             order_obj.order_status = order.expired
             order_obj.save()
 
