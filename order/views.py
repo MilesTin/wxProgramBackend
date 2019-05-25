@@ -35,7 +35,7 @@ def search(request):
         return JsonResponse({"msg":"page字段有问题"},status=404)
 
     results = order.objects.filter(order_status=order.incompleted).values(*["orderid","createTime","money","pos","kuaidi","expireDateTime",])
-    results = [_ for _ in results if search in _.pos or search in _.recieved_pos or search in _.kuaidi]
+    results = [_ for _ in results  if search in _.recieved_pos or search in _.kuaidi]
 
     orderByTime = request.GET.get("orderbytime",'')
     orderByPrice = request.GET.get("orderbyprice",'')
