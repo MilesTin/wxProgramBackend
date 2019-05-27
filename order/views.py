@@ -112,6 +112,8 @@ def sendOrder(request):
         kuaidi = request.POST.get("kuaidi","")
         received_pos = request.POST.get('received_pos',"")
         try:
+            print("value:",value)
+            print("expireTime",expireTime)
             value = int(value)
             expireTime = int(expireTime)
             money = float(expireTime)

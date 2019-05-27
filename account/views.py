@@ -106,7 +106,7 @@ class sculogin(object):
 scuLoginer = sculogin()
 
 def login(request):
-    wx_name = request.GET.get("wx_name")
+    wx_name = request.GET.get("wx_name","")
     appid = settings.APPID
     secret = settings.SECRET
     code = request.GET.get("code","")
@@ -152,19 +152,19 @@ def login(request):
             cur_user.save()
         except:
             #创建user
-            newUser = user()
-            newUser.openid = openid
-            newUser.wx_name = wx_name
-            newUser.head_img = settings.STATIC_URL + "/account/img/" + openid + ".jpg"
-            newUser.save()
+            cur_user = user()
+            cur_user.openid = openid
+            cur_user.wx_name = wx_name
+            cur_user.head_img = settings.STATIC_URL + "/account/img/" + openid + ".jpg"
+            cur_user.save()
             #头像文件保存
-            if platform.system()=='Linux':
-                local = settings.STATIC_ROOT + "/account/img/"+newUser.openid + ".jpg"
-            else:
-                local = "static/account/img/"+newUser.openid + ".jpg"
+        if platform.system()=='Linux':
+            local = settings.STATIC_ROOT + "/account/img/"+cur_user.openid + ".jpg"
+        else:
+            local = "static/account/img/"+cur_user.openid + ".jpg"
             # with open(local,'w') as f:
             #     pass
-            urllib.request.urlretrieve(head_img,local)
+        urllib.request.urlretrieve(head_img,local)
         request.session['session_key'] = session_key
         request.session['openid'] = openid
         request.session['is_login'] = True
