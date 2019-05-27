@@ -8,11 +8,9 @@ from account.views import serializeUser
 from datetime import datetime
 from django.utils import timezone
 from datetime import timedelta
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
-"""
-    bug:expireTime应改为datetime,新订单时创建
-    
-"""
+
 userSerializer = serializeUser()
 
 def orderStatusUpdate():
@@ -98,6 +96,7 @@ def getOrder(request):#获得某个订单的具体信息
     print(ret_values)
     return JsonResponse({"order":ret_values},safe=False)
 
+@csrf_exempt
 def sendOrder(request):
     if request.method=='POST':
         openid = request.session.get("openid")
@@ -117,7 +116,11 @@ def sendOrder(request):
         except ValueError as e:
             print(e)
             return JsonResponse({"msg":"字段有错误"},status=404)
-
+        try:
+            cur_order = order.objects.get(orderid=orderid)
+            return JsonResponse({"msg":"订单id重复"},status=404)
+        except:
+            pass
         if not cur_user or not hidden_info or not orderid or not (expireTime in [x[0] for x in order.expireTime_choices]) or not money or not pos or not kuaidi or not received_pos or not (value in [x[0] for x in order.value_choices]):
             return JsonResponse({"msg":"字段不全"},status=404)
         else:

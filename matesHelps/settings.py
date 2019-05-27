@@ -34,6 +34,8 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'feedkback',
+    'comment',
     'order',
     'account',
     'django.contrib.admin',
