@@ -9,6 +9,7 @@ from datetime import datetime
 from django.utils import timezone
 from datetime import timedelta
 from django.views.decorators.csrf import csrf_exempt
+from comment.models import *
 # Create your views here.
 
 userSerializer = serializeUser()
@@ -164,8 +165,8 @@ def receiveOrder(request):
         return JsonResponse({"msg":"未绑定学号"},status=404)
     else:
         cur_order.free_lancer = cur_user
-        cur_order.save()
         cur_user.received_order_count -= 1
+        cur_order.save()
         return JsonResponse({"msg":"领取订单成功"})
 
 def cancelOrder(request):
@@ -175,12 +176,44 @@ def cancelOrder(request):
     cur_order = get_object_or_404(order,orderid=orderid)
     if cur_order.order_owner==cur_user:
         cur_order.order_status = order.canceled
+        cur_order.save()
         return JsonResponse({"msg":"取消成功"})
     if cur_order.free_lancer==cur_user:
         return JsonResponse({"msg":"请联系订单主人协商后由主人取消"},status=404)
 
     return JsonResponse({"msg":"你无权取消"},status=404)
 
+
+def calRate(cur_user:user):
+    owner_orders = order.objects.filter(order_owner=cur_user)
+    lancer_orders = order.objects.filter(free_lancer=cur_user)
+    orders_count = len(owner_orders) + len(lancer_orders)
+
+    rateSum = 0
+    count = 0
+    for orderObj in owner_orders:
+        try:
+            commentObj = comment.objects.get(order=orderObj)
+            if commentObj.lancer_commented:
+                rateSum += commentObj.lancer_star
+                count += 1
+        except ObjectDoesNotExist:
+            continue
+    for orderObj in lancer_orders:
+        try:
+            commentObj = comment.objects.get(order=orderObj)
+            if commentObj.owner_commented:
+                rateSum += commentObj.owner_star
+                count += 1
+        except ObjectDoesNotExist:
+            continue
+    try:
+        rate = rateSum/count
+    except ZeroDivisionError:
+        rate = 5.0
+    cur_user.rate = rate
+    cur_user.save()
+    return rate
 def orderComplete(request):
     openid = request.GET.get("openid","")
     orderid = request.GET.get("orderid","")
@@ -188,6 +221,9 @@ def orderComplete(request):
     cur_order = get_object_or_404(order, orderid=orderid)
     if cur_order.order_owner==cur_user:
         cur_order.order_status = order.completed
+        cur_order.save()
+
+
         return JsonResponse({"msg":"确认成功"})
     if cur_order.free_lancer==cur_user:
         return JsonResponse({"msg":"请联系订单主人后由主人确认"},status=404)

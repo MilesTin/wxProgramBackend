@@ -6,6 +6,8 @@ from django.shortcuts import redirect,get_object_or_404
 from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
+from order.models import *
+from order.views import calRate
 
 class serializeType(DjangoJSONEncoder):
     def default(self, o, Type=type(None),*fields):
@@ -63,6 +65,8 @@ def toComment(request):
                 commentObj.owner_commented = True
                 commentObj.order = cur_order
                 commentObj.save()
+                calRate(cur_order.free_lancer)#计算小哥评分
+
                 return JsonResponse({"msg":"评价成功"})
         elif cur_order.free_lancer == cur_user:
             if cur_order.comment and cur_order.comment.lancer_commented:
@@ -74,6 +78,7 @@ def toComment(request):
                 commentObj.lancer_commented = True
                 commentObj.order = cur_order
                 commentObj.save()
+                calRate(cur_order.order_owner)  # 计算主人评分
                 return JsonResponse({"msg": "评价成功"})
     else:
         return JsonResponse({"msg":"请使用POST"},status=404)
