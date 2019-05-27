@@ -19,7 +19,9 @@ import logging
 from django.core.serializers.json import DjangoJSONEncoder
 
 logger = logging.getLogger(__name__)
-
+"""
+缺少功能，用户评分更新
+"""
 
 class serializeUser(DjangoJSONEncoder):
     def default(self,o,*fields):

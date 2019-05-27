@@ -34,7 +34,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    'feedkback',
+    'feedback',
     'comment',
     'order',
     'account',
