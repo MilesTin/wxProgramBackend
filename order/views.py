@@ -101,7 +101,8 @@ def getOrder(request):#获得某个订单的具体信息
 def sendOrder(request):
     if request.method=='POST':
         openid = request.session.get("openid")
-        cur_user = get_object_or_404(openid=openid)
+        print("openid",openid)
+        cur_user = get_object_or_404(user,openid=openid)
         value = request.POST.get("value","")
         hidden_info = request.POST.get("hidden_info","")
         orderid = request.POST.get('orderid',"")

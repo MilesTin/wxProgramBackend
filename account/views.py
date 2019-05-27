@@ -121,6 +121,8 @@ def login(request):
         errmsg+="登录code为空"
     elif not head_img:
         errmsg += "头像url没空"
+    elif not wx_name:
+        errmsg += "微信名为空"
     if errmsg:
         return JsonResponse({"errmsg":errmsg},status=404)
 
@@ -164,14 +166,18 @@ def login(request):
             #     pass
             urllib.request.urlretrieve(head_img,local)
         request.session['session_key'] = session_key
+        request.session['openid'] = openid
         request.session['is_login'] = True
         request.session.set_expiry(100000000)
+
+
         return JsonResponse({"msg":"You are logged in"})
     else:#errcode由微信api决定(auth code2session), https://developers.weixin.qq.com/miniprogram/dev/api-backend/auth.code2Session.html
         return JsonResponse({"errmsg": errmsg,"errcode":errcode}, status=404)
 
 
 def logout(request):
+    print(dict(request.session))
     if request.session.exists('openid'):
         del request.session['openid']
     if request.session.exists('session_key'):
