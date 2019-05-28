@@ -71,4 +71,4 @@ class order(models.Model):
         verbose_name_plural = "订单"
 
     def __str__(self):
-        return self.orderid + " " + self.value
+        return self.orderid + " " + order.value_choices[self.value][1]
