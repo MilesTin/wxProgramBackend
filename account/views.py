@@ -47,6 +47,7 @@ class serializeUser(DjangoJSONEncoder):
 
 #没有问题，单元测试搞不来
 def order_user_Serializer(o,orderFields,userFields):
+    # print(type(o))
     ret_value = {}
     for key in orderFields:
         serializer = serializeUser()
@@ -109,7 +110,7 @@ scuLoginer = sculogin()
 def login(request):
     wx_name = request.GET.get("wx_name","")
     wx_name = str(wx_name)
-    print(wx_name)
+    # print(wx_name)
     appid = settings.APPID
     secret = settings.SECRET
     code = request.GET.get("code","")
@@ -149,8 +150,8 @@ def login(request):
 
     if not errcode:
         request.session['openid'] = openid
-        print("wx_name",wx_name)
-        print("🐷")
+        # print("wx_name",wx_name)
+        # print("🐷")
         try:
             cur_user = user.objects.get(openid=openid)
 
@@ -257,21 +258,24 @@ def myorder(request):
         status = 0
 
     #第一种,我发的订单
-    sendOrder = order.objects.filter(order_owner=cur_user).values(["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"])
-    receivedOrder = order.objects.filter(free_lancer=cur_user).values(["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"])
+    sendOrder = order.objects.filter(order_owner=cur_user)
+    receivedOrder = order.objects.filter(free_lancer=cur_user)
 
-    orderFields = ["orderid","value","createTime","expireTime","order_owner","free_lancer","money","pos","kuaidi","recieved_pos","hidden_info"]
+    orderFields = ["orderid","value","createTime","expireDateTime","order_owner","free_lancer","money","pos","kuaidi","received_pos","hidden_info"]
     userFields = ["openid","wx_name","phone","studentId","head_img"]
     if status:
         sendOrder = sendOrder.filter(order_status=status)
         receivedOrder = receivedOrder.filter(order_status=status)
     #默认按照订单创建时间排序,最新的订单
-    sendOrder.order_by("createTime")
-    receivedOrder.order_by("createTime")
+    sendOrder.order_by("createTime").reverse()
+    receivedOrder.order_by("createTime").reverse()
 
     sendOrders = [order_user_Serializer(order_obj,orderFields,userFields) for order_obj in sendOrder]
     receivedOrders = [order_user_Serializer(order_obj,orderFields,userFields) for order_obj in receivedOrder]
-    return JsonResponse({"sendOrder":sendOrder,"receivedOrder":receivedOrder},safe=False)
+    # sendOrder = sendOrder.values(*orderFields)
+    # receivedOrder = receivedOrder.values(*orderFields)
+
+    return JsonResponse({"sendOrder":sendOrders,"receivedOrder":receivedOrders},safe=False)
 
 #test函数
 if __name__=="__main__":

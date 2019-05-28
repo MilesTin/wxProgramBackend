@@ -8,6 +8,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.views.decorators.csrf import csrf_exempt
 from order.models import *
 from order.views import calRate
+from django.core.exceptions import ObjectDoesNotExist
 
 class serializeType(DjangoJSONEncoder):
     def default(self, o, Type=type(None),*fields):
@@ -55,9 +56,19 @@ def toComment(request):
         text = request.POST.get("text","")
 
         if cur_order.order_owner == cur_user:
-            if cur_order.comment and cur_order.comment.owner_commented:
-                return JsonResponse({"msg":"你已评价"},status=404)
-            else:
+            try:
+                if cur_order.comment.owner_commented:
+                    return JsonResponse({"msg":"你已评价"},status=404)
+                else:
+                    commentObj = cur_order.comment
+                    commentObj.owner_star = star
+                    commentObj.owner_text = text
+                    commentObj.owner_commented = True
+                    commentObj.save()
+                    calRate(cur_order.free_lancer)  # 计算小哥评分
+                    return JsonResponse({"msg": "评价成功"})
+            except ObjectDoesNotExist as e:
+                print(e)
                 commentObj = comment()
 
                 commentObj.owner_text = text
@@ -69,9 +80,19 @@ def toComment(request):
 
                 return JsonResponse({"msg":"评价成功"})
         elif cur_order.free_lancer == cur_user:
-            if cur_order.comment and cur_order.comment.lancer_commented:
-                return JsonResponse({"msg": "你已评价"}, status=404)
-            else:
+            try:
+                if cur_order.comment.lancer_commented:
+                    return JsonResponse({"msg": "你已评价"}, status=404)
+                else:
+                    commentObj = cur_order.comment
+                    commentObj.lancer_star = star
+                    commentObj.lancer_text = text
+                    commentObj.lancer_commented = True
+                    commentObj.save()
+                    calRate(cur_order.order_owner)  # 计算主人评分
+                    return JsonResponse({"msg": "评价成功"})
+            except ObjectDoesNotExist as e:
+                print(e)
                 commentObj = comment()
                 commentObj.lancer_text = text
                 commentObj.lancer_star = star

@@ -22,4 +22,5 @@ urlpatterns = [
     path("order/",include("order.urls")),
     path("comment/",include("comment.urls")),
     path("feedback/", include("feedback.urls")),
+    path("announce/",include("announce.urls")),
 ]

@@ -1,5 +1,6 @@
 from django.db import models
 from account.models import user
+from django.utils import timezone
 # Create your models here.
 
 
@@ -20,13 +21,7 @@ class order(models.Model):
     twoday = 48
     threeday = 72
 
-    expireTime_choices = (
-        (onehour,"one hour"),
-        (sixhour,"six hour"),
-        (oneday,"one day"),
-        (twoday,"two day"),
-        (threeday,"three day")
-    )
+
 
     completed = 1#已完成
     canceled = 2
@@ -41,7 +36,7 @@ class order(models.Model):
     )
     orderid = models.CharField(max_length=30,unique=True,primary_key=True)
     value = models.IntegerField("价值",choices=value_choices)
-    createTime = models.DateTimeField(auto_now_add=True)
+    createTime = models.DateTimeField("创建时间",default=timezone.now)
     expireDateTime = models.DateTimeField(verbose_name="过期时间")
     order_owner = models.ForeignKey(user,verbose_name="订单主人",null=True,blank=True,on_delete=models.SET_NULL,related_name="owner_orders")
     #接订单的人

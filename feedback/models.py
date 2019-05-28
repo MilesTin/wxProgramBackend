@@ -10,3 +10,6 @@ class feedback(models.Model):
     class Meta:
         verbose_name_plural = "反馈s"
         verbose_name = "反馈"
+
+    def __str__(self):
+        return str(self.owner) + ":" + self.text[:10]

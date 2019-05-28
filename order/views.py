@@ -33,9 +33,9 @@ def search(request):
         print(e)
         return JsonResponse({"msg":"page字段有问题"},status=404)
 
-    results = order.objects.filter(order_status=order.incompleted).values(*["orderid","createTime","money","pos","received_pos","kuaidi","expireDateTime",])
+    results = order.objects.filter(order_status=order.incompleted,free_lancer=None).values(*["orderid","createTime","money","pos","received_pos","kuaidi","expireDateTime",])
 
-    results = [_ for _ in results if search in _['pos'] or search in _["received_pos"] or search in _["kuaidi"]]
+    results = [_ for _ in results if search in _['pos'] or search in _["received_pos"] or search in _["kuaidi"] ]
 
     orderByTime = request.GET.get("orderByTime",'')
     orderByPrice = request.GET.get("orderByPrice",'')
@@ -103,7 +103,7 @@ def sendOrder(request):
         openid = request.session.get("openid")
         print("openid",openid)
         cur_user = get_object_or_404(user,openid=openid)
-        value = request.POST.get("value","")
+        value = request.POST.get("value",1)
         hidden_info = request.POST.get("hidden_info","")
         orderid = request.POST.get('orderid',"")
         expireTime = request.POST.get("expireTime","")
@@ -125,24 +125,28 @@ def sendOrder(request):
             return JsonResponse({"msg":"订单id重复"},status=404)
         except:
             pass
-        if not cur_user or not hidden_info or not orderid or not (expireTime in [x[0] for x in order.expireTime_choices]) or not money or not pos or not kuaidi or not received_pos or not (value in [x[0] for x in order.value_choices]):
+        if not cur_user or not hidden_info or not orderid or not expireTime or not money or not pos or not kuaidi or not received_pos or not (value in [x[0] for x in order.value_choices]):
             return JsonResponse({"msg":"字段不全"},status=404)
         else:
             if cur_user.sended_order_count<=0:
                 return JsonResponse({"msg":"你已有10个订单，到达额度"},status=404)
+
             cur_user.sended_order_count -= 1
-            cur_user.save()
+
             newOrder = order()
+            print(orderid,order.incompleted,cur_user,hidden_info,timezone.now()+timedelta(hours=expireTime),value,money,pos,kuaidi,received_pos)
+            newOrder.orderid = orderid
             newOrder.order_status = order.incompleted
             newOrder.order_owner = cur_user
             newOrder.hidden_info = hidden_info
-            newOrder.expireDateTime = datetime.today() + timedelta(hours=expireTime)
+            newOrder.expireDateTime = timezone.now() + timedelta(hours=expireTime)
             newOrder.value = value
             newOrder.money = money
             newOrder.pos = pos
             newOrder.kuaidi = kuaidi
             newOrder.recieved_pos = received_pos
             newOrder.save()
+            cur_user.save()
             return JsonResponse({"msg":"创建订单成功"})
     else:
         return JsonResponse({"msg":"请使用post"},status=406)#not acceptable
@@ -166,6 +170,8 @@ def receiveOrder(request):
         return JsonResponse({"msg":"被禁止用户"},status=404)
     elif not cur_user.studentId or not cur_user.stuIdPwd:
         return JsonResponse({"msg":"未绑定学号"},status=404)
+    elif cur_order.free_lancer:
+        return JsonResponse({"msg":"该订单已经有人领单"},status=404)
     else:
         cur_order.free_lancer = cur_user
         cur_user.received_order_count -= 1
@@ -178,9 +184,18 @@ def cancelOrder(request):
     cur_user = get_object_or_404(user,openid=openid)
     cur_order = get_object_or_404(order,orderid=orderid)
     if cur_order.order_owner==cur_user:
+        if cur_order.order_status==order.canceled:
+            return JsonResponse({"msg":"订单早已取消"},status=404)
+        elif cur_order.order_status!=order.incompleted:
+            return JsonResponse({"msg":"订单已完成或过期不能取消"},status=404)
         cur_order.order_status = order.canceled
+        cur_user.sended_order_count += 1
+        lancer_user = cur_order.free_lancer
+        lancer_user.received_order_count += 1
+        lancer_user.save()
+        cur_user.save()
         cur_order.save()
-        return JsonResponse({"msg":"取消成功"})
+        return JsonResponse({"msg":"取消成功请重新发起订单"})
     if cur_order.free_lancer==cur_user:
         return JsonResponse({"msg":"请联系订单主人协商后由主人取消"},status=404)
 
@@ -218,16 +233,24 @@ def calRate(cur_user:user):
     cur_user.save()
     return rate
 def orderComplete(request):
-    openid = request.GET.get("openid","")
+    openid = request.session.get("openid","")
     orderid = request.GET.get("orderid","")
     cur_user = get_object_or_404(user, openid=openid)
     cur_order = get_object_or_404(order, orderid=orderid)
     if cur_order.order_owner==cur_user:
+        if cur_order.order_status==order.completed:
+            return JsonResponse({"msg":"订单早已完成"},status=404)
+        elif cur_order.order_status!=order.incompleted:
+            return JsonResponse({"msg":"订单已取消或过期不能完成"},status=404)
         cur_order.order_status = order.completed
         cur_order.save()
+        cur_user.sended_order_count+=1
+        lancer_user = cur_order.free_lancer
+        lancer_user.received_order_count += 1
 
-
-        return JsonResponse({"msg":"确认成功"})
+        cur_user.save()
+        lancer_user.save()
+        return JsonResponse({"msg":"完成订单确认成功"})
     if cur_order.free_lancer==cur_user:
         return JsonResponse({"msg":"请联系订单主人后由主人确认"},status=404)
 
