@@ -66,3 +66,9 @@ class order(models.Model):
     hidden_info = models.TextField(verbose_name="隐藏的信息",null=True,blank=True)
     #包含收件手机号 取件码 以及一切相关的信息
 
+    class Meta:
+        verbose_name = "订单"
+        verbose_name_plural = "订单"
+
+    def __str__(self):
+        return self.orderid + " " + self.value
