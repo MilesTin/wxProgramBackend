@@ -1,3 +1,4 @@
+#_*_ coding:utf-8 _*_
 from django.shortcuts import render
 import django
 from django.http import JsonResponse,HttpResponse
@@ -107,6 +108,8 @@ scuLoginer = sculogin()
 
 def login(request):
     wx_name = request.GET.get("wx_name","")
+    wx_name = str(wx_name)
+    print(wx_name)
     appid = settings.APPID
     secret = settings.SECRET
     code = request.GET.get("code","")
@@ -146,8 +149,11 @@ def login(request):
 
     if not errcode:
         request.session['openid'] = openid
+        print("wx_name",wx_name)
+        print("🐷")
         try:
             cur_user = user.objects.get(openid=openid)
+
             cur_user.wx_name = wx_name
             cur_user.save()
         except:

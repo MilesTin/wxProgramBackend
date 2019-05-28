@@ -112,13 +112,13 @@ def sendOrder(request):
         kuaidi = request.POST.get("kuaidi","")
         received_pos = request.POST.get('received_pos',"")
         try:
-            print("value:",value)
-            print("expireTime",expireTime)
             value = int(value)
             expireTime = int(expireTime)
             money = float(expireTime)
         except ValueError as e:
             print(e)
+            print("value:",value)
+            print("expireTime",expireTime)
             return JsonResponse({"msg":"字段有错误"},status=404)
         try:
             cur_order = order.objects.get(orderid=orderid)

@@ -8,7 +8,7 @@ class user(models.Model):
 
 
     openid = models.CharField(max_length=30,unique=True,primary_key=True)
-    wx_name = models.CharField(max_length=200,null=True,blank=True)
+    wx_name = models.CharField(max_length=256,null=True,blank=True,)
     phone = models.CharField(max_length=11,null=True,blank=True)#手机号为11位
     studentId = models.CharField(max_length=13,unique=True,null=True,blank=True)#学号为13为
     stuIdPwd = models.CharField(max_length=30,null=True,blank=True)

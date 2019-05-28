@@ -9,10 +9,13 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
+#_*_ coding:utf-8 _*_
 import os
 import pymysql
+
+# pymysql.install_as_MySQLdb()
 import platform
+DEFAULT_CHARSET = 'utf-8'
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -89,7 +92,9 @@ DATABASES = {
         'PASSWORD':'tmzqq520..',
         'HOST':'129.28.140.83',
         'port':3306,
-
+        'OPTIONS':{
+            'charset':'utf8mb4',
+        }
     }
     # 'default':{
     #     'ENGINE': 'django.db.backends.sqlite3',
