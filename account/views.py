@@ -85,11 +85,11 @@ class sculogin(object):
             else:
                 open('static/account/img/login.jpg', 'wb').write(ir.content)
         # test
-        img = Image.open("static/account/img/login.jpg")
-        img.show()
+        # img = Image.open("static/account/img/login.jpg")
+        # img.show()
 
 
-    def login(self,username,password,captcha:str)->bool:
+    def login(self,username,password,captcha:str,cookies)->bool:
         """
         :param captcha:
         :param username:
@@ -101,8 +101,10 @@ class sculogin(object):
             'j_password':password,
             'j_captcha':captcha,
         }
-        res = self.session.post(sculogin.url,data=data)
-
+        # print(cookies)
+        res = self.session.post(sculogin.url,data=data,cookies=cookies)
+        # print(res.status_code)
+        # print(res.text)
         if (res.status_code==200):
             return True
 
@@ -184,6 +186,8 @@ def login(request):
     else:#errcode由微信api决定(auth code2session), https://developers.weixin.qq.com/miniprogram/dev/api-backend/auth.code2Session.html
         return JsonResponse({"errmsg": errmsg,"errcode":errcode}, status=404)
 
+scuLoginer = sculogin()
+
 
 def logout(request):
     print(dict(request.session))
@@ -196,17 +200,19 @@ def logout(request):
 @csrf_exempt
 def verifStuId(request):
     print(dict(request.session))
-    stuId = request.GET.get("stuId","")
-    passwd = request.GET.get("passwd")
-    captcha = request.GET.get("captcha")
+    stuId = request.POST.get("stuId","")
+    passwd = request.POST.get("passwd")
+    captcha = request.POST.get("captcha")
     openid = request.session.get("openid","")
     is_updated = request.session.get("is_updated","")
     cur_user = get_object_or_404(user,openid=openid)
-
+    cookies = request.session.get("cookies")
+    # print(stuId,passwd,captcha)
+    # print(cookies)
     if not is_updated:
         return JsonResponse({"msg":"验证码未更新"},status=404,)
-    scuLoginer = settings['scuLoginer']
-    result = scuLoginer.login(username=stuId,password=passwd,captcha=captcha)
+
+    result = scuLoginer.login(username=stuId,password=passwd,captcha=captcha,cookies=cookies)
     request.session["is_updated"] = False
     if result:
         #保存学号和密码
@@ -220,12 +226,12 @@ def verifStuId(request):
 
 
 def getCaptcha(request):
-    scuLoginer = sculogin()
-    settings['scuLoginer'] = scuLoginer
+    global scuLoginer
     openid = request.session.get("openid","")
     cur_user = get_object_or_404(user,openid=openid)
+    scuLoginer.getCapatcha()
     request.session["is_updated"] = True
-
+    request.session["cookies"] = dict(scuLoginer.session.cookies)
     return JsonResponse({"msg":"获取验证码成功"})
 
 def verifPhone(request):
@@ -295,3 +301,16 @@ if __name__=="__main__":
     scuL.getCapatcha()
     captcha = input("验证码:")
     print(scuL.login("2017141461248","014170",captcha))
+    username = "2017141461248"
+    password = "014170"
+    captcha = "1234"
+    data = {
+        'j_username': username,
+        'j_password': password,
+        'j_captcha': captcha,
+
+    }
+    url = "http://zhjw.scu.edu.cn/j_spring_security_check"
+    session = requests.session()
+    cookies = None
+    res = session.post(sculogin.url, data=data, cookies=cookies)
