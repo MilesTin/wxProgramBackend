@@ -17,6 +17,7 @@ from qcloudsms_py.httpclient import HTTPError
 from order.models import *
 import os
 import logging
+from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers.json import DjangoJSONEncoder
 
 logger = logging.getLogger(__name__)
@@ -77,6 +78,7 @@ class sculogin(object):
         self.session = requests.Session()
         print(sculogin.url)
         ir = self.session.get(sculogin.img_url)
+        # print(ir.text)
         if ir.status_code == 200:
             if platform.system()=="Linux":
                 open(settings.STATIC_ROOT+'/account/img/login.jpg', 'wb').write(ir.content)
@@ -191,18 +193,21 @@ def logout(request):
         del request.session['session_key']
     return JsonResponse({"msg":"You are logged out"})
 
-
+@csrf_exempt
 def verifStuId(request):
+    print(dict(request.session))
     stuId = request.GET.get("stuId","")
     passwd = request.GET.get("passwd")
     captcha = request.GET.get("captcha")
     openid = request.session.get("openid","")
+    is_updated = request.session.get("is_updated","")
     cur_user = get_object_or_404(user,openid=openid)
 
-    if not sculogin.is_updated:
+    if not is_updated:
         return JsonResponse({"msg":"验证码未更新"},status=404,)
 
     result = scuLoginer.login(username=stuId,password=passwd,captcha=captcha)
+    request.session["is_updated"] = False
     if result:
         #保存学号和密码
         cur_user.studentId = stuId
@@ -215,8 +220,12 @@ def verifStuId(request):
 
 
 def getCaptcha(request):
+    global sculoginer
     scuLoginer.getCapatcha()
-    sculogin.is_updated = True
+    openid = request.session.get("openid","")
+    cur_user = get_object_or_404(user,openid=openid)
+    request.session["is_updated"] = True
+
     return JsonResponse({"msg":"获取验证码成功"})
 
 def verifPhone(request):
