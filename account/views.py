@@ -205,7 +205,7 @@ def verifStuId(request):
 
     if not is_updated:
         return JsonResponse({"msg":"验证码未更新"},status=404,)
-    scuLoginer = request.session.get("scuLoginer")
+    scuLoginer = settings['scuLoginer']
     result = scuLoginer.login(username=stuId,password=passwd,captcha=captcha)
     request.session["is_updated"] = False
     if result:
@@ -221,7 +221,7 @@ def verifStuId(request):
 
 def getCaptcha(request):
     scuLoginer = sculogin()
-    request.session.scuLoginer = scuLoginer
+    settings['scuLoginer'] = scuLoginer
     openid = request.session.get("openid","")
     cur_user = get_object_or_404(user,openid=openid)
     request.session["is_updated"] = True
