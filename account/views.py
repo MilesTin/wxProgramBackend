@@ -84,9 +84,9 @@ class sculogin(object):
                 open(settings.STATIC_ROOT+'/account/img/login.jpg', 'wb').write(ir.content)
             else:
                 open('static/account/img/login.jpg', 'wb').write(ir.content)
-        #test
-        # img = Image.open("static/account/img/login.jpg")
-        # img.show()
+        # test
+        img = Image.open("static/account/img/login.jpg")
+        img.show()
 
 
     def login(self,username,password,captcha:str)->bool:
@@ -107,7 +107,7 @@ class sculogin(object):
             return True
 
         return False
-scuLoginer = sculogin()
+
 
 def login(request):
     wx_name = request.GET.get("wx_name","")
@@ -205,7 +205,7 @@ def verifStuId(request):
 
     if not is_updated:
         return JsonResponse({"msg":"验证码未更新"},status=404,)
-
+    scuLoginer = request.session.get("scuLoginer")
     result = scuLoginer.login(username=stuId,password=passwd,captcha=captcha)
     request.session["is_updated"] = False
     if result:
@@ -220,8 +220,8 @@ def verifStuId(request):
 
 
 def getCaptcha(request):
-    global sculoginer
-    scuLoginer.getCapatcha()
+    scuLoginer = sculogin()
+    request.session.scuLoginer = scuLoginer
     openid = request.session.get("openid","")
     cur_user = get_object_or_404(user,openid=openid)
     request.session["is_updated"] = True
