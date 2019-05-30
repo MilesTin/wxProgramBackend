@@ -162,9 +162,9 @@ def receiveOrder(request):
     orderid = request.GET.get("orderid")
     cur_user = get_object_or_404(user,openid=openid)
     cur_order = get_object_or_404(order,orderid=orderid)
-    if not cur_user.phone:
-        return JsonResponse({"msg":"请绑定手机号"},status=404)
-    elif cur_user.received_order_count<=0:
+    # if not cur_user.phone:
+    #     return JsonResponse({"msg":"请绑定手机号"},status=404)
+    if cur_user.received_order_count<=0:
         return JsonResponse({"msg":"你已有10个订单"},status=404)
     elif cur_user.status == user.banned:
         return JsonResponse({"msg":"被禁止用户"},status=404)
