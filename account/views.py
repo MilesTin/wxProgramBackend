@@ -35,6 +35,8 @@ class serializeUser(DjangoJSONEncoder):
                     ret_value[key] = value
                 elif type(value)==type(None):
                     ret_value[key] = ''
+                elif type(value)==float:
+                    ret_value[key] = value
                 else:
                     serializeValue = super().default(value)
                     ret_value[key] = serializeValue
@@ -293,6 +295,17 @@ def myorder(request):
     # receivedOrder = receivedOrder.values(*orderFields)
 
     return JsonResponse({"sendOrder":sendOrders,"receivedOrder":receivedOrders},safe=False)
+
+
+def myInfo(request):
+    openid = request.session.get("openid")
+    cur_user = get_object_or_404(user,openid=openid)
+    userSerializer = serializeUser()
+    # print(isinstance(cur_user,user))
+    value = userSerializer.default(cur_user,*["openid","wx_name","phone","studentId","head_img","rate"])
+    # print(value)
+    return JsonResponse(value,safe=False)
+
 
 #test函数
 if __name__=="__main__":
