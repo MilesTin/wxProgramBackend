@@ -96,6 +96,7 @@ class sculogin(object):
         :param password:
         :return bool:
         """
+        self.session = requests.session()
         data = {
             'j_username':username,
             'j_password':password,
@@ -186,7 +187,7 @@ def login(request):
     else:#errcode由微信api决定(auth code2session), https://developers.weixin.qq.com/miniprogram/dev/api-backend/auth.code2Session.html
         return JsonResponse({"errmsg": errmsg,"errcode":errcode}, status=404)
 
-scuLoginer = sculogin()
+
 
 
 def logout(request):
@@ -199,6 +200,7 @@ def logout(request):
 
 @csrf_exempt
 def verifStuId(request):
+    scuLoginer = sculogin()
     print(dict(request.session))
     stuId = request.POST.get("stuId","")
     passwd = request.POST.get("passwd")
@@ -226,7 +228,7 @@ def verifStuId(request):
 
 
 def getCaptcha(request):
-    global scuLoginer
+    scuLoginer = sculogin()
     openid = request.session.get("openid","")
     cur_user = get_object_or_404(user,openid=openid)
     scuLoginer.getCapatcha()
