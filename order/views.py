@@ -176,6 +176,7 @@ def receiveOrder(request):
         cur_order.free_lancer = cur_user
         cur_user.received_order_count -= 1
         cur_order.save()
+        cur_user.save()
         return JsonResponse({"msg":"领取订单成功"})
 
 def cancelOrder(request):
