@@ -113,6 +113,6 @@ def get_comment(request):
         return JsonResponse({"msg":"订单未完成"})
     else:
         commentObj = cur_order.comment
-        return JsonResponse({"orderid":orderid,"comment":serializer.default(commentObj,type(comment()),*["owner_star","lancer_star","owner_text","lancer_text","owner_commented","lancer_commented"])})
+        return JsonResponse({"orderid":orderid,"comment":serializer.default(commentObj,type(comment()),*["owner_star","lancer_star","owner_text","lancer_text"])})
 
 

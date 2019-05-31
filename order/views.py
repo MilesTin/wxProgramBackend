@@ -26,6 +26,7 @@ def search(request):
     #每次返回10个订单
     orderStatusUpdate()#更新数据库状态
     search = request.GET.get("search","")
+    print("search:"+search)
     page = request.GET.get("page","")
     try:
         page = int(page)
@@ -34,7 +35,7 @@ def search(request):
         return JsonResponse({"msg":"page字段有问题"},status=404)
 
     results = order.objects.filter(order_status=order.incompleted,free_lancer=None).values(*["orderid","createTime","money","pos","received_pos","kuaidi","expireDateTime",])
-
+    print(len(results))
     results = [_ for _ in results if search in _['pos'] or search in _["received_pos"] or search in _["kuaidi"] ]
 
     orderByTime = request.GET.get("orderByTime",'')
