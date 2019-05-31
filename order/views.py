@@ -191,8 +191,9 @@ def cancelOrder(request):
         cur_order.order_status = order.canceled
         cur_user.sended_order_count += 1
         lancer_user = cur_order.free_lancer
-        lancer_user.received_order_count += 1
-        lancer_user.save()
+        if lancer_user:
+            lancer_user.received_order_count += 1
+            lancer_user.save()
         cur_user.save()
         cur_order.save()
         return JsonResponse({"msg":"取消成功请重新发起订单"})
